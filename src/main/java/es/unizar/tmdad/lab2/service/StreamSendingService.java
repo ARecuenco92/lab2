@@ -12,10 +12,11 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.social.twitter.api.FilterStreamParameters;
 import org.springframework.social.twitter.api.Stream;
 import org.springframework.social.twitter.api.StreamListener;
-import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.impl.TwitterTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
+
+import es.unizar.tmdad.lab2.domain.TargetedTweet;
 
 @Service
 public class StreamSendingService {
@@ -42,15 +43,10 @@ public class StreamSendingService {
 		stream = twitterTemplate.streamingOperations().filter(fsp, Arrays.asList(integrationStreamListener));		
 	}
 	
-	public void sendTweet(Tweet tweet) {
+	public void sendTweet(TargetedTweet tweet) {
 		Map<String, Object> map = new HashMap<>();
 		map.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
-		for(String s: lookupService.getQueries()) {
-			if (tweet.getText().contains(s)) {
-		ops.convertAndSend(
-				"/queue/search/"+s, tweet, map);
-			}
-		}
+		ops.convertAndSend("/queue/search/"+tweet.getFirstTarget(), tweet.getTweet(), map);
 	}
 
 	public Stream getStream() {
